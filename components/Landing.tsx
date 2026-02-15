@@ -1,0 +1,92 @@
+"use client";
+import { useRouter } from "next/navigation";
+import { rmstu } from "@/data/rmstu";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { GraduationCap, BookOpen, ArrowRight } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
+
+const Landing = () => {
+  const router = useRouter();
+  const departments = Object.entries(rmstu);
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Theme Toggle */}
+      <div className="fixed right-4 top-4 z-50">
+        <ThemeToggle />
+      </div>
+      {/* Hero */}
+      <header className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent" />
+        <div className="relative mx-auto max-w-5xl px-4 py-20 text-center sm:py-28">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+            <GraduationCap className="h-4 w-4" />
+            RMSTU CGPA Calculator
+          </div>
+          <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            Calculate Your{" "}
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              CGPA
+            </span>{" "}
+            Instantly
+          </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
+            A modern calculator for Rangamati Science and Technology University
+            students. Select your department and start calculating your GPA &
+            CGPA.
+          </p>
+        </div>
+      </header>
+
+      {/* Departments */}
+      <section className="mx-auto max-w-5xl px-4 pb-20">
+        <h2 className="mb-8 text-center text-2xl font-bold text-foreground">
+          Select Your Department
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {departments.map(([code, dept]) => {
+            const available = dept.semesters.length > 0;
+            return (
+              <Card
+                key={code}
+                className={`group relative overflow-hidden transition-all ${
+                  available
+                    ? "cursor-pointer hover:shadow-lg hover:shadow-primary/10 hover:border-primary/40"
+                    : "opacity-60"
+                }`}
+                onClick={() => available && router.push(`/rmstu/${code}`)}
+              >
+                <CardContent className="flex items-start gap-4 p-5">
+                  <div
+                    className={`mt-0.5 rounded-xl p-2.5 ${available ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+                  >
+                    <BookOpen className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground">
+                      {dept.dept}
+                    </h3>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      {code}
+                    </p>
+                    {!available && (
+                      <span className="mt-2 inline-block rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                        Coming Soon
+                      </span>
+                    )}
+                  </div>
+                  {available && (
+                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default Landing;
