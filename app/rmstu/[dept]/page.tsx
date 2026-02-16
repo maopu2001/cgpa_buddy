@@ -234,7 +234,7 @@ export default function CalculatorPage({ params }: Props) {
                 <SemesterCard
                   semester={sem}
                   grades={grades}
-                  electives={department.electives}
+                  deptCode={dept}
                   electiveSelections={electives}
                   onGradeChange={setGrade}
                   onElectiveChange={setElective}

@@ -13,14 +13,14 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Theme Toggle */}
-      <div className="fixed right-4 top-4 z-50">
+      <div className="absolute right-4 top-4 z-50">
         <ThemeToggle />
       </div>
       {/* Hero */}
       <header className="relative overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-secondary/5 to-transparent" />
-        <div className="relative mx-auto max-w-5xl px-4 py-20 text-center sm:py-28">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+        <div className="relative mx-auto max-w-5xl px-4 py-15 text-center sm:py-20">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
             <GraduationCap className="h-4 w-4" />
             RMSTU CGPA Calculator
           </div>
@@ -40,7 +40,7 @@ const Landing = () => {
       </header>
 
       {/* Departments */}
-      <section className="mx-auto max-w-5xl px-4 pb-20">
+      <section className="mx-auto max-w-5xl px-4 pb-20 mt-5">
         <h2 className="mb-8 text-center text-2xl font-bold text-foreground">
           Select Your Department
         </h2>

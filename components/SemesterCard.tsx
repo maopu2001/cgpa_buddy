@@ -1,4 +1,9 @@
-import { Subject, GRADE_SCALE, Semester, Electives } from "@/data/rmstu";
+import {
+  Subject,
+  GRADE_SCALE,
+  Semester,
+  getCSEElectiveOptions,
+} from "@/data/rmstu";
 import { GradeMap } from "@/lib/cgpa";
 import { ElectiveSelection } from "@/hooks/use-grades";
 import {
@@ -12,13 +17,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "./ui/input";
-import { PenOff, RotateCcw, SquarePen } from "lucide-react";
+import { PenOff, SquarePen } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface Props {
   semester: Semester;
+  deptCode: string;
   grades: GradeMap;
-  electives?: Electives;
   electiveSelections: ElectiveSelection;
   onGradeChange: (code: string, value: number | null) => void;
   onElectiveChange: (electiveCode: string, subjectCode: string) => void;
@@ -32,7 +37,7 @@ interface Props {
 const SemesterCard = ({
   semester,
   grades,
-  electives,
+  deptCode,
   electiveSelections,
   onGradeChange,
   onElectiveChange,
@@ -75,13 +80,6 @@ const SemesterCard = ({
 
   const displayGPA = fixGPA ? manualGPAInput : gpa.toFixed(2);
 
-  const getElectiveOptions = (code: string) => {
-    if (!electives) return [];
-    if (code.includes("ELECTIVE-2") || code === "ELECTIVE-2-LAB")
-      return electives.option_II;
-    return [...electives.option_I, ...electives.option_II];
-  };
-
   const renderSubjectRow = (subject: Subject) => {
     const elective = isElective(subject.code);
     const selectedElective = electiveSelections[subject.code];
@@ -99,15 +97,17 @@ const SemesterCard = ({
                   variant="outline"
                   className="text-xs border-secondary/40 text-secondary"
                 >
-                  {selectedElective || subject.code}
+                  {selectedElective || subject.code} |{" "}
+                  {subject.type.toUpperCase()}
                 </Badge>
+
                 <span>{subject.credit} Credits</span>
               </div>
 
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium text-foreground truncate">
                   {selectedElective
-                    ? getElectiveOptions(subject.code).find(
+                    ? getCSEElectiveOptions(subject.code, deptCode).find(
                         (e) => e.code === selectedElective,
                       )?.name
                     : "Choose Elective"}
@@ -129,7 +129,7 @@ const SemesterCard = ({
                   <SelectValue placeholder="Select course..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {getElectiveOptions(subject.code).map((e) => (
+                  {getCSEElectiveOptions(subject.code, deptCode).map((e) => (
                     <SelectItem key={e.code} value={e.code} className="text-xs">
                       {e.name}
                     </SelectItem>
@@ -144,7 +144,7 @@ const SemesterCard = ({
                   variant="outline"
                   className="text-xs border-secondary/40 text-secondary"
                 >
-                  {subject.code}
+                  {subject.code} | {subject.type.toUpperCase()}
                 </Badge>
                 <span>{subject.credit} Credits</span>
               </div>
