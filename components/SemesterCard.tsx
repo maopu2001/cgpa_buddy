@@ -260,8 +260,9 @@ const SemesterCard = ({
       <CardContent className="space-y-2">
         <div className="flex rounded-lg border bg-card p-4">
           <div className="flex gap-2 md:gap-5 items-center w-full">
-            <span className="text-center text-nowrap text-sm md:text-base">
-              Achieved GPA
+            <span className="text-center text-sm sm:text-base flex flex-col sm:flex-row items-center gap-0 sm:gap-1">
+              <span>Achieved</span>
+              <span>GPA</span>
             </span>
             <Input
               value={displayGPA}
@@ -269,7 +270,7 @@ const SemesterCard = ({
               onChange={handleManualGPAChange}
               onBlur={handleManualGPABlur}
               type="text"
-              className="min-w-20"
+              className="min-w-20 text-center sm:text-left"
             />
             <div className="flex gap-2">
               <Button
