@@ -164,7 +164,7 @@ const Landing = () => {
               <p className="text-sm font-medium text-foreground">
                 Created and Maintained by
               </p>
-              <p className="text-lg font-semibold text-primary">
+              <p className="text-lg font-semibold text-primary py-2">
                 M. Aktaruzzaman Opu
               </p>
               <p className="text-sm">
@@ -186,7 +186,7 @@ const Landing = () => {
                 <span>GitHub Profile</span>
               </Link>
               <Link
-                href="https://github.com/maopu2001"
+                href="https://github.com/maopu2001/cgpa_buddy"
                 target="_blank"
                 className="border rounded-sm gap-2 flex items-center px-3 py-2 text-sm hover:bg-accent transition-all"
               >
