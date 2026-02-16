@@ -1,16 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import type { GradeMap } from "@/lib/cgpa";
 
-const STORAGE_KEY = "rmstu-cgpa-grades";
-const ELECTIVE_KEY = "rmstu-cgpa-electives";
-const MANUAL_GPA_KEY = "rmstu-cgpa-manual-gpas";
-const FIX_GPA_KEY = "rmstu-cgpa-fix-gpa";
-
 export type ElectiveSelection = Record<string, string>; // elective code -> chosen subject code
 export type ManualGPAs = Record<string, number>; // semester code -> manual GPA
 export type FixGPAMap = Record<string, boolean>; // semester code -> fixGPA state
 
-export function useGrades() {
+interface RMSTUData {
+  grades: GradeMap;
+  electives: ElectiveSelection;
+  manualGPAs: ManualGPAs;
+  fixGPAMap: FixGPAMap;
+}
+
+export function useGrades(deptCode: string) {
+  const STORAGE_KEY = `rmstu-${deptCode.toLowerCase()}-cgpa-data`;
+
   const [grades, setGrades] = useState<GradeMap>({});
   const [electives, setElectives] = useState<ElectiveSelection>({});
   const [manualGPAs, setManualGPAs] = useState<ManualGPAs>({});
@@ -20,43 +24,44 @@ export function useGrades() {
   // Load from localStorage after mount to avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Load data when STORAGE_KEY (department) changes
+  useEffect(() => {
+    if (!mounted) return;
+
+    // Reset state when department changes
+    setGrades({});
+    setElectives({});
+    setManualGPAs({});
+    setFixGPAMap({});
+
     try {
-      const savedGrades = localStorage.getItem(STORAGE_KEY);
-      const savedElectives = localStorage.getItem(ELECTIVE_KEY);
-      const savedManualGPAs = localStorage.getItem(MANUAL_GPA_KEY);
-      const savedFixGPAMap = localStorage.getItem(FIX_GPA_KEY);
-      if (savedGrades) setGrades(JSON.parse(savedGrades));
-      if (savedElectives) setElectives(JSON.parse(savedElectives));
-      if (savedManualGPAs) setManualGPAs(JSON.parse(savedManualGPAs));
-      if (savedFixGPAMap) setFixGPAMap(JSON.parse(savedFixGPAMap));
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data: RMSTUData = JSON.parse(saved);
+        setGrades(data.grades || {});
+        setElectives(data.electives || {});
+        setManualGPAs(data.manualGPAs || {});
+        setFixGPAMap(data.fixGPAMap || {});
+      }
     } catch {
       // Ignore errors
     }
-  }, []);
+  }, [STORAGE_KEY, mounted]);
 
+  // Save all data to a single localStorage key
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(grades));
+      const data: RMSTUData = {
+        grades,
+        electives,
+        manualGPAs,
+        fixGPAMap,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
-  }, [grades, mounted]);
-
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem(ELECTIVE_KEY, JSON.stringify(electives));
-    }
-  }, [electives, mounted]);
-
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem(MANUAL_GPA_KEY, JSON.stringify(manualGPAs));
-    }
-  }, [manualGPAs, mounted]);
-
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem(FIX_GPA_KEY, JSON.stringify(fixGPAMap));
-    }
-  }, [fixGPAMap, mounted]);
+  }, [grades, electives, manualGPAs, fixGPAMap, mounted, STORAGE_KEY]);
 
   const setGrade = useCallback((code: string, value: number | null) => {
     setGrades((prev) => ({ ...prev, [code]: value }));
@@ -83,10 +88,7 @@ export function useGrades() {
     setManualGPAs({});
     setFixGPAMap({});
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(ELECTIVE_KEY);
-    localStorage.removeItem(MANUAL_GPA_KEY);
-    localStorage.removeItem(FIX_GPA_KEY);
-  }, []);
+  }, [STORAGE_KEY]);
 
   return {
     grades,

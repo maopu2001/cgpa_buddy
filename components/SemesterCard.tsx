@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "./ui/input";
 import { PenOff, SquarePen } from "lucide-react";
 import { useState, useEffect } from "react";
+import { ResetDialog } from "@/components/ResetDialog";
 
 interface Props {
   semester: Semester;
@@ -273,24 +274,30 @@ const SemesterCard = ({
               className="min-w-20 text-center sm:text-left"
             />
             <div className="flex gap-2">
-              <Button
-                onClick={handleManualInput}
-                variant={!fixGPA ? "outline" : "default"}
+              <ResetDialog
+                onConfirm={handleManualInput}
+                title="Switch to Manual Input?"
+                description="This will clear all course grades for this semester and allow you to enter the GPA directly. You can switch back anytime, but course-wise grades will be lost then."
               >
-                <span>
-                  <SquarePen className="size-3.5" />
-                </span>
-                <span className="hidden md:block">Manual Input</span>
-              </Button>
-              <Button
-                onClick={handleCourseWiseInput}
-                variant={fixGPA ? "outline" : "default"}
+                <Button variant={!fixGPA ? "outline" : "default"}>
+                  <span>
+                    <SquarePen className="size-3.5" />
+                  </span>
+                  <span className="hidden md:block">Manual Input</span>
+                </Button>
+              </ResetDialog>
+              <ResetDialog
+                onConfirm={handleCourseWiseInput}
+                title="Switch to Course-Wise Input?"
+                description="This will exit manual mode and allow you to select grades for each course individually. The GPA will be recalculated based on the selected grades."
               >
-                <span>
-                  <PenOff className="size-3.5" />
-                </span>
-                <span className="hidden md:block">Course-Wise Input</span>
-              </Button>
+                <Button variant={fixGPA ? "outline" : "default"}>
+                  <span>
+                    <PenOff className="size-3.5" />
+                  </span>
+                  <span className="hidden md:block">Course-Wise Input</span>
+                </Button>
+              </ResetDialog>
             </div>
           </div>
         </div>

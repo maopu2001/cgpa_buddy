@@ -120,8 +120,30 @@ const ResultsDashboard = ({
     <div className="space-y-6">
       {/* Top summary */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="sm:col-span-1 flex items-center justify-center py-6">
-          <CGPAGauge value={overall.cgpa} />
+        <Card className="sm:col-span-1 place-content-center">
+          <CardHeader>
+            <CardTitle className="text-xl text-center">Your CGPA</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center gap-6">
+              <CGPAGauge value={overall.cgpa} max={4} size={220} />
+              <p className="-mt-2 font-semibold text-sm">Out of 4.00</p>
+              <div className="grid w-full grid-cols-2 gap-4">
+                <div className="rounded-lg border bg-muted/50 p-4 text-center">
+                  <p className="text-sm text-muted-foreground">Total Earned</p>
+                  <p className="text-2xl font-bold">
+                    {overall.earnedCredits.toFixed(1)}
+                  </p>
+                </div>
+                <div className="rounded-lg border bg-muted/50 p-4 text-center">
+                  <p className="text-sm text-muted-foreground">Total Credits</p>
+                  <p className="text-2xl font-bold">
+                    {overall.totalPossibleCredits.toFixed(1)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
         </Card>
 
         <Card className="sm:col-span-2">

@@ -1,68 +1,71 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState, use } from "react";
-import { rmstu } from "@/data/rmstu";
-import { useGrades } from "@/hooks/use-grades";
+import { useState, useEffect } from "react";
+import { useCustomCGPA } from "@/hooks/use-custom-cgpa";
 import { calcSemesterGPA } from "@/lib/cgpa";
 import SemesterCard from "@/components/SemesterCard";
 import ResultsDashboard from "@/components/ResultsDashboard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, RotateCcw, Printer } from "lucide-react";
+import { ArrowLeft, RotateCcw, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ResetDialog } from "@/components/ResetDialog";
 import { DataExportImport } from "@/components/DataExportImport";
 
-interface Props {
-  params: Promise<{ dept: string }>;
-}
-
-export default function CalculatorPage({ params }: Props) {
+export default function CustomCalculatorPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("results");
-
-  // Unwrap params Promise for Next.js 16
-  const { dept } = use(params);
-  const department = dept ? rmstu[dept] : null;
-
   const {
+    structure,
     grades,
-    electives,
     manualGPAs,
     fixGPAMap,
+    mounted,
+    dataLoaded,
     setGrade,
-    setElective,
     setManualGPA,
     setFixGPA,
-    resetAll,
-  } = useGrades(dept);
+    resetGrades,
+  } = useCustomCGPA();
 
-  if (!department || department.semesters.length === 0) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground">
-            Department not found
-          </h2>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={() => router.push("/")}
-          >
-            Go Back
-          </Button>
-        </div>
-      </div>
-    );
+  // Redirect to setup if no structure
+  useEffect(() => {
+    if (dataLoaded && !structure) {
+      router.push("/custom/new");
+    }
+  }, [dataLoaded, structure, router]);
+
+  const handleReset = () => {
+    resetGrades();
+    toast.success("All grades have been reset");
+  };
+
+  if (
+    !dataLoaded ||
+    !structure ||
+    !structure.semesters ||
+    structure.semesters.length === 0
+  ) {
+    return null;
   }
 
-  const totalSubjects = department.semesters.reduce(
-    (a, s) => a + s.subjects.length,
-    0,
-  );
-  const gradedSubjects = department.semesters.reduce(
+  // Convert custom structure to match the expected format
+  const semesters = structure.semesters.map((sem) => ({
+    year: sem.year,
+    semester: sem.semester,
+    code: sem.code,
+    subjects: sem.courses.map((course) => ({
+      name: course.name,
+      code: course.code,
+      credit: course.credit,
+      type: course.type,
+    })),
+  }));
+
+  const totalSubjects = semesters.reduce((a, s) => a + s.subjects.length, 0);
+  const gradedSubjects = semesters.reduce(
     (a, s) =>
       a +
       s.subjects.filter(
@@ -73,26 +76,8 @@ export default function CalculatorPage({ params }: Props) {
   const progressPercent =
     totalSubjects > 0 ? (gradedSubjects / totalSubjects) * 100 : 0;
 
-  const handleReset = () => {
-    resetAll();
-    toast.success("All grades have been cleared.");
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const getOrdinals = (n: number) => {
-    switch (n) {
-      case 1:
-        return `${n}st`;
-      case 2:
-        return `${n}nd`;
-      case 3:
-        return `${n}rd`;
-      default:
-        return `${n}th`;
-    }
+  const handleGoToSetup = () => {
+    router.push("/custom/new");
   };
 
   return (
@@ -111,40 +96,56 @@ export default function CalculatorPage({ params }: Props) {
               </Button>
               <div>
                 <h1 className="text-sm font-bold text-foreground sm:text-base">
-                  {department.dept}
+                  Custom CGPA Calculator
                 </h1>
                 <p className="text-xs text-muted-foreground">
-                  {department.university}
+                  Your personalized calculator
                 </p>
               </div>
             </div>
-            <div className="grid gap-2 grid-cols-2 md:grid-cols-4">
+
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-2 ">
+              <div className="md:hidden"></div>
               <ResetDialog
                 onConfirm={handleReset}
                 title="Reset All Grades?"
-                description="This will clear all grades, electives, and manual GPAs. This action cannot be undone."
+                description="This will clear all grades and manual GPAs for your custom structure. This action cannot be undone."
               >
-                <Button variant="outline" size="sm" className="flex gap-2 order-1 md:order-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex gap-2 order-2 md:order-4"
+                >
                   <RotateCcw className="h-3.5 w-3.5" />
-                  <span className="hidden sm:block">Reset</span>
+                  <span className="hidden sm:block">Reset Grades</span>
                 </Button>
               </ResetDialog>
 
-              <ThemeToggle className="order-2 md:order-4"/>
+              <ThemeToggle className="order-3 md:order-5" />
 
               <DataExportImport
-                className="order-3 md:order-1"
+                className="order-4 md:order-1"
                 action="export"
-                storageKey={`rmstu-${dept.toLowerCase()}-cgpa-data`}
+                storageKey="custom-cgpa-data"
                 label="Data"
               />
 
               <DataExportImport
-                className="order-4 md:order-2"
+                className="order-5 md:order-2"
                 action="import"
-                storageKey={`rmstu-${dept.toLowerCase()}-cgpa-data`}
+                storageKey="custom-cgpa-data"
                 label="Data"
               />
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGoToSetup}
+                className="flex gap-2 order-6 md:order-3"
+              >
+                <Settings className="h-3.5 w-3.5" />
+                <span className="hidden sm:block">Edit Structure</span>
+              </Button>
             </div>
           </div>
           <div className="mx-auto max-w-5xl px-4 pb-2">
@@ -173,38 +174,39 @@ export default function CalculatorPage({ params }: Props) {
                 </TabsTrigger>
               </div>
 
-              {Array.from({ length: department.semesters.length / 2 }).map(
-                (_, yearIndex) => {
-                  const firstSem = department.semesters[yearIndex * 2];
-                  const secondSem = department.semesters[yearIndex * 2 + 1];
+              {(() => {
+                // Group semesters by year
+                const yearGroups: Record<string, typeof semesters> = {};
+                semesters.forEach((sem) => {
+                  if (!yearGroups[sem.year]) {
+                    yearGroups[sem.year] = [];
+                  }
+                  yearGroups[sem.year].push(sem);
+                });
 
-                  return (
-                    <div key={yearIndex} className="flex flex-col gap-2">
+                return Object.entries(yearGroups).map(
+                  ([year, semestersInYear]) => (
+                    <div key={year} className="flex flex-col gap-2 min-w-fit">
                       <div className="font-semibold text-xs text-center -mb-1">
-                        {getOrdinals(yearIndex + 1)} Year
+                        {year}
                       </div>
-
-                      <TabsTrigger
-                        key={firstSem.code}
-                        value={firstSem.code}
-                        className="text-sm whitespace-nowrap grow gap-1 border bg-accent/50"
-                      >
-                        <span>1st</span>
-                        <span className="hidden md:block"> Semester</span>
-                      </TabsTrigger>
-
-                      <TabsTrigger
-                        key={secondSem.code}
-                        value={secondSem.code}
-                        className="text-sm whitespace-nowrap grow gap-1 border bg-accent/50"
-                      >
-                        <span>2nd</span>
-                        <span className="hidden md:block"> Semester</span>
-                      </TabsTrigger>
+                      {semestersInYear.map((sem) => (
+                        <TabsTrigger
+                          key={sem.code}
+                          value={sem.code}
+                          className="text-sm whitespace-nowrap grow gap-1 border bg-accent/50"
+                        >
+                          <span>{sem.semester.split(" ")[0]}</span>
+                          <span className="hidden md:inline">
+                            {" "}
+                            {sem.semester.split(" ")[1]}
+                          </span>
+                        </TabsTrigger>
+                      ))}
                     </div>
-                  );
-                },
-              )}
+                  ),
+                );
+              })()}
             </TabsList>
           </div>
         </header>
@@ -213,14 +215,14 @@ export default function CalculatorPage({ params }: Props) {
         <main className="mx-auto max-w-5xl px-4 py-6 mb-24">
           <TabsContent value="results">
             <ResultsDashboard
-              semesters={department.semesters}
+              semesters={semesters}
               grades={grades}
               manualGPAs={manualGPAs}
               fixGPAMap={fixGPAMap}
             />
           </TabsContent>
 
-          {department.semesters.map((sem) => {
+          {semesters.map((sem) => {
             const { gpa } = calcSemesterGPA(
               sem.subjects,
               grades,
@@ -236,10 +238,10 @@ export default function CalculatorPage({ params }: Props) {
                 <SemesterCard
                   semester={sem}
                   grades={grades}
-                  deptCode={dept}
-                  electiveSelections={electives}
+                  deptCode="CUSTOM"
+                  electiveSelections={{}}
                   onGradeChange={setGrade}
-                  onElectiveChange={setElective}
+                  onElectiveChange={() => {}}
                   gpa={displayGPA}
                   calculatedGPA={gpa}
                   fixGPA={isFixedGPA}
