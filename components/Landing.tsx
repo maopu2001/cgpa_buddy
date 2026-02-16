@@ -18,7 +18,7 @@ const Landing = () => {
       </div>
       {/* Hero */}
       <header className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-secondary/5 to-transparent" />
         <div className="relative mx-auto max-w-5xl px-4 py-20 text-center sm:py-28">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
             <GraduationCap className="h-4 w-4" />
@@ -26,7 +26,7 @@ const Landing = () => {
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             Calculate Your{" "}
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
               CGPA
             </span>{" "}
             Instantly

@@ -20,7 +20,17 @@ interface Props {
 export default function CalculatorPage({ params }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("results");
-  const { grades, electives, setGrade, setElective, resetAll } = useGrades();
+  const {
+    grades,
+    electives,
+    manualGPAs,
+    fixGPAMap,
+    setGrade,
+    setElective,
+    setManualGPA,
+    setFixGPA,
+    resetAll,
+  } = useGrades();
 
   // Unwrap params Promise for Next.js 16
   const { dept } = use(params);
@@ -69,20 +79,24 @@ export default function CalculatorPage({ params }: Props) {
     window.print();
   };
 
+  const getOrdinals = (n: number) => {
+    switch (n) {
+      case 1:
+        return `${n}st`;
+      case 2:
+        return `${n}nd`;
+      case 3:
+        return `${n}rd`;
+      default:
+        return `${n}th`;
+    }
+  };
+
   const getOnlySemester = (code: string) => {
     const y = code[0],
       s = code[1];
     const semNum = 2 * (parseInt(y) - 1) + parseInt(s);
-    switch (semNum) {
-      case 1:
-        return `${semNum}st`;
-      case 2:
-        return `${semNum}nd`;
-      case 3:
-        return `${semNum}rd`;
-      default:
-        return `${semNum}th`;
-    }
+    return getOrdinals(semNum);
   };
 
   return (
@@ -141,20 +155,54 @@ export default function CalculatorPage({ params }: Props) {
           </div>
 
           <div className="mx-auto max-w-5xl px-4 pb-2">
-            <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
-              <TabsTrigger value="results" className="text-sm grow">
-                Results
-              </TabsTrigger>
-              {department.semesters.map((sem) => (
+            <TabsList className="w-full justify-start overflow-x-auto h-auto grid grid-cols-5 grow gap-2 p-2">
+              <div className="flex flex-col gap-2 size-full">
+                <div className="font-semibold text-xs text-center -mb-1">
+                  Combined
+                </div>
                 <TabsTrigger
-                  key={sem.code}
-                  value={sem.code}
-                  className="text-sm whitespace-nowrap grow gap-1"
+                  value="results"
+                  className="size-full text-xs md:text-base bg-accent"
                 >
-                  <span>{getOnlySemester(sem.code)}</span>
-                  <span className="hidden md:block"> Semester</span>
+                  <span className="flex flex-col bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    <span>Result</span>
+                    <span>Summary</span>
+                  </span>
                 </TabsTrigger>
-              ))}
+              </div>
+
+              {Array.from({ length: department.semesters.length / 2 }).map(
+                (_, yearIndex) => {
+                  const firstSem = department.semesters[yearIndex * 2];
+                  const secondSem = department.semesters[yearIndex * 2 + 1];
+
+                  return (
+                    <div key={yearIndex} className="flex flex-col gap-2">
+                      <div className="font-semibold text-xs text-center -mb-1">
+                        {getOrdinals(yearIndex + 1)} Year
+                      </div>
+
+                      <TabsTrigger
+                        key={firstSem.code}
+                        value={firstSem.code}
+                        className="text-sm whitespace-nowrap grow gap-1 border bg-accent/50"
+                      >
+                        <span>1st</span>
+                        <span className="hidden md:block"> Semester</span>
+                      </TabsTrigger>
+
+                      <TabsTrigger
+                        key={secondSem.code}
+                        value={secondSem.code}
+                        className="text-sm whitespace-nowrap grow gap-1 border bg-accent/50"
+                      >
+                        <span>2nd</span>
+                        <span className="hidden md:block"> Semester</span>
+                      </TabsTrigger>
+                    </div>
+                  );
+                },
+              )}
             </TabsList>
           </div>
         </header>
@@ -165,11 +213,22 @@ export default function CalculatorPage({ params }: Props) {
             <ResultsDashboard
               semesters={department.semesters}
               grades={grades}
+              manualGPAs={manualGPAs}
+              fixGPAMap={fixGPAMap}
             />
           </TabsContent>
 
           {department.semesters.map((sem) => {
-            const { gpa } = calcSemesterGPA(sem.subjects, grades);
+            const { gpa } = calcSemesterGPA(
+              sem.subjects,
+              grades,
+              sem.code,
+              manualGPAs,
+              fixGPAMap,
+            );
+            const isFixedGPA = fixGPAMap[sem.code] || false;
+            const displayGPA = isFixedGPA ? manualGPAs[sem.code] || 0 : gpa;
+
             return (
               <TabsContent key={sem.code} value={sem.code}>
                 <SemesterCard
@@ -179,7 +238,11 @@ export default function CalculatorPage({ params }: Props) {
                   electiveSelections={electives}
                   onGradeChange={setGrade}
                   onElectiveChange={setElective}
-                  gpa={gpa}
+                  gpa={displayGPA}
+                  calculatedGPA={gpa}
+                  fixGPA={isFixedGPA}
+                  setFixGPA={(fix) => setFixGPA(sem.code, fix)}
+                  setManualGPA={(gpa) => setManualGPA(sem.code, gpa)}
                 />
               </TabsContent>
             );

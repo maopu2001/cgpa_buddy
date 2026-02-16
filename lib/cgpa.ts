@@ -1,10 +1,40 @@
 // Grades map: subjectCode -> grade value (number) or null (not taken)
 export type GradeMap = Record<string, number | null>;
+export type ManualGPAs = Record<string, number>; // semester code -> manual GPA
+export type FixGPAMap = Record<string, boolean>; // semester code -> fixGPA state
 
 export function calcSemesterGPA(
   subjects: { code: string; credit: number }[],
-  grades: GradeMap
+  grades: GradeMap,
+  semesterCode?: string,
+  manualGPAs?: ManualGPAs,
+  fixGPAMap?: FixGPAMap,
 ): { gpa: number; totalCredits: number; earnedCredits: number } {
+  // If this semester is in manual mode, return manual GPA with all credits
+  if (
+    semesterCode &&
+    fixGPAMap?.[semesterCode] &&
+    manualGPAs?.[semesterCode] !== undefined
+  ) {
+    const manualGPA = manualGPAs[semesterCode];
+    const allCredits = subjects.reduce((sum, s) => sum + s.credit, 0);
+
+    // If manual GPA is 0 or invalid, ignore this semester (return zeros)
+    if (manualGPA <= 0) {
+      return {
+        gpa: 0,
+        totalCredits: 0,
+        earnedCredits: 0,
+      };
+    }
+
+    return {
+      gpa: manualGPA,
+      totalCredits: allCredits,
+      earnedCredits: allCredits,
+    };
+  }
+
   let totalPoints = 0;
   let totalCredits = 0;
   let earnedCredits = 0;
@@ -25,22 +55,49 @@ export function calcSemesterGPA(
 }
 
 export function calcCGPA(
-  semesters: { subjects: { code: string; credit: number }[] }[],
-  grades: GradeMap
-): { cgpa: number; totalCredits: number; earnedCredits: number; totalPossibleCredits: number } {
+  semesters: { code: string; subjects: { code: string; credit: number }[] }[],
+  grades: GradeMap,
+  manualGPAs?: ManualGPAs,
+  fixGPAMap?: FixGPAMap,
+): {
+  cgpa: number;
+  totalCredits: number;
+  earnedCredits: number;
+  totalPossibleCredits: number;
+} {
   let totalPoints = 0;
   let totalCredits = 0;
   let earnedCredits = 0;
   let totalPossibleCredits = 0;
 
   for (const sem of semesters) {
-    for (const s of sem.subjects) {
-      totalPossibleCredits += s.credit;
-      const grade = grades[s.code];
-      if (grade === null || grade === undefined) continue;
-      totalCredits += s.credit;
-      totalPoints += grade * s.credit;
-      if (grade > 0) earnedCredits += s.credit;
+    const semesterTotalCredits = sem.subjects.reduce(
+      (sum, s) => sum + s.credit,
+      0,
+    );
+    totalPossibleCredits += semesterTotalCredits;
+
+    // If semester is in manual mode, use manual GPA
+    if (fixGPAMap?.[sem.code] && manualGPAs?.[sem.code] !== undefined) {
+      const manualGPA = manualGPAs[sem.code];
+
+      // Skip this semester if manual GPA is 0 or invalid (ignore it in CGPA calculation)
+      if (manualGPA <= 0) {
+        continue;
+      }
+
+      totalCredits += semesterTotalCredits;
+      earnedCredits += semesterTotalCredits;
+      totalPoints += manualGPA * semesterTotalCredits;
+    } else {
+      // Otherwise, calculate from individual subject grades
+      for (const s of sem.subjects) {
+        const grade = grades[s.code];
+        if (grade === null || grade === undefined) continue;
+        totalCredits += s.credit;
+        totalPoints += grade * s.credit;
+        if (grade > 0) earnedCredits += s.credit;
+      }
     }
   }
 
@@ -54,8 +111,16 @@ export function calcCGPA(
 
 export function getGradeDistribution(grades: GradeMap): Record<string, number> {
   const labels: Record<number, string> = {
-    4: "A+", 3.75: "A", 3.5: "A-", 3.25: "B+", 3: "B",
-    2.75: "B-", 2.5: "C+", 2.25: "C", 2: "D", 0: "F",
+    4: "A+",
+    3.75: "A",
+    3.5: "A-",
+    3.25: "B+",
+    3: "B",
+    2.75: "B-",
+    2.5: "C+",
+    2.25: "C",
+    2: "D",
+    0: "F",
   };
   const dist: Record<string, number> = {};
   for (const v of Object.values(grades)) {
@@ -64,14 +129,6 @@ export function getGradeDistribution(grades: GradeMap): Record<string, number> {
     dist[label] = (dist[label] || 0) + 1;
   }
   return dist;
-}
-
-export function getGPAColor(gpa: number): string {
-  if (gpa >= 3.75) return "text-emerald-500";
-  if (gpa >= 3.25) return "text-blue-500";
-  if (gpa >= 2.75) return "text-amber-500";
-  if (gpa >= 2.0) return "text-orange-500";
-  return "text-red-500";
 }
 
 export function getGPABgColor(gpa: number): string {

@@ -11,6 +11,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "./ui/input";
+import { PenOff, RotateCcw, SquarePen } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface Props {
   semester: Semester;
@@ -20,6 +23,10 @@ interface Props {
   onGradeChange: (code: string, value: number | null) => void;
   onElectiveChange: (electiveCode: string, subjectCode: string) => void;
   gpa: number;
+  calculatedGPA: number;
+  fixGPA: boolean;
+  setFixGPA: (fix: boolean) => void;
+  setManualGPA: (gpa: number) => void;
 }
 
 const SemesterCard = ({
@@ -30,15 +37,43 @@ const SemesterCard = ({
   onGradeChange,
   onElectiveChange,
   gpa,
+  calculatedGPA,
+  fixGPA,
+  setFixGPA,
+  setManualGPA: setManualGPACallback,
 }: Props) => {
+  const [manualGPAInput, setManualGPAInput] = useState<string>(gpa.toFixed(2));
+
+  // Sync manualGPAInput with gpa prop when switching semesters or exiting manual mode
+  useEffect(() => {
+    if (!fixGPA) {
+      setManualGPAInput(gpa.toFixed(2));
+    }
+  }, [gpa, fixGPA]);
+
+  // Sync when semester changes (switching tabs)
+  useEffect(() => {
+    setManualGPAInput(gpa.toFixed(2));
+  }, [semester.code]);
+
   const isElective = (code: string) => code.startsWith("ELECTIVE");
-  const filledCount = semester.subjects.filter(
-    (s) => grades[s.code] !== undefined && grades[s.code] !== null,
-  ).length;
   const totalCredits = semester.subjects.reduce((a, s) => a + s.credit, 0);
-  const earnedCredits = semester.subjects
-    .filter((s) => grades[s.code] !== undefined && grades[s.code] !== null)
-    .reduce((a, s) => a + s.credit, 0);
+
+  // Calculate earned credits - if manual mode with valid GPA, all credits are earned
+  // F grade (0.0) should not count as earned credits
+  const earnedCredits =
+    fixGPA && parseFloat(manualGPAInput) > 0
+      ? totalCredits
+      : semester.subjects
+          .filter(
+            (s) =>
+              grades[s.code] !== undefined &&
+              grades[s.code] !== null &&
+              grades[s.code]! > 0,
+          )
+          .reduce((a, s) => a + s.credit, 0);
+
+  const displayGPA = fixGPA ? manualGPAInput : gpa.toFixed(2);
 
   const getElectiveOptions = (code: string) => {
     if (!electives) return [];
@@ -88,6 +123,7 @@ const SemesterCard = ({
               <Select
                 value={selectedElective || ""}
                 onValueChange={(val) => onElectiveChange(subject.code, val)}
+                disabled={fixGPA}
               >
                 <SelectTrigger className="h-8 text-xs mt-1.5">
                   <SelectValue placeholder="Select course..." />
@@ -129,9 +165,11 @@ const SemesterCard = ({
                 variant={isSelected ? "default" : "outline"}
                 size="sm"
                 onClick={() => onGradeChange(subject.code, g.value)}
-                className="px-3 h-9 font-medium grow"
+                className="px-3 h-12 font-medium grow flex flex-col items-center justify-center gap-0"
+                disabled={fixGPA}
               >
-                {gradeLabel}
+                <span>{gradeLabel}</span>
+                <span className="text-[8px]">{g.value.toFixed(2)}</span>
               </Button>
             );
           })}
@@ -140,13 +178,61 @@ const SemesterCard = ({
             variant={grades[subject.code] === null ? "default" : "outline"}
             size="sm"
             onClick={() => onGradeChange(subject.code, null)}
-            className="px-3 h-9 font-medium text-xs grow"
+            className="px-3 h-12 font-medium text-xs grow flex flex-col items-center justify-center gap-0"
+            disabled={fixGPA}
           >
-            Skip
+            <span>Skip</span>
+            <span className="text-[8px]">Don't Count</span>
           </Button>
         </div>
       </div>
     );
+  };
+
+  const handleManualInput = () => {
+    // Reset all grades for this semester
+    semester.subjects.forEach((subject) => {
+      onGradeChange(subject.code, undefined as any);
+    });
+    const initialGPA = calculatedGPA.toFixed(2);
+    setManualGPAInput(initialGPA);
+    setManualGPACallback(parseFloat(initialGPA));
+    setFixGPA(true);
+  };
+
+  const handleCourseWiseInput = () => {
+    setFixGPA(false);
+  };
+
+  const handleManualGPAChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Allow empty, numbers, and decimal points (including trailing decimal)
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+      const numValue = parseFloat(value);
+
+      // If it's a valid number, check it doesn't exceed 4.0
+      // If it's empty or invalid (like "." or "3."), allow it as intermediate input
+      if (value === "" || isNaN(numValue) || numValue <= 4.0) {
+        setManualGPAInput(value);
+
+        // Update parent state immediately when we have a valid complete number
+        if (!isNaN(numValue) && numValue >= 0 && numValue <= 4.0) {
+          setManualGPACallback(numValue);
+        }
+      }
+    }
+  };
+
+  const handleManualGPABlur = () => {
+    const numValue = parseFloat(manualGPAInput);
+    if (!isNaN(numValue) && numValue >= 0 && numValue <= 4.0) {
+      setManualGPACallback(numValue);
+    } else if (manualGPAInput === "" || isNaN(numValue)) {
+      // If invalid, reset to 0
+      setManualGPAInput("0.00");
+      setManualGPACallback(0);
+    }
   };
 
   return (
@@ -163,12 +249,50 @@ const SemesterCard = ({
             </p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold">{gpa.toFixed(2)}</p>
+            <p className="text-2xl font-bold">
+              {fixGPA ? manualGPAInput || "0.00" : gpa.toFixed(2)}
+            </p>
             <p className="text-xs text-muted-foreground">GPA</p>
           </div>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-2">
+        <div className="flex rounded-lg border bg-card p-4">
+          <div className="flex gap-2 md:gap-5 items-center w-full">
+            <span className="text-center text-nowrap text-sm md:text-base">
+              Achieved GPA
+            </span>
+            <Input
+              value={displayGPA}
+              disabled={!fixGPA}
+              onChange={handleManualGPAChange}
+              onBlur={handleManualGPABlur}
+              type="text"
+              className="min-w-20"
+            />
+            <div className="flex gap-2">
+              <Button
+                onClick={handleManualInput}
+                variant={!fixGPA ? "outline" : "default"}
+              >
+                <span>
+                  <SquarePen className="size-3.5" />
+                </span>
+                <span className="hidden md:block">Manual Input</span>
+              </Button>
+              <Button
+                onClick={handleCourseWiseInput}
+                variant={fixGPA ? "outline" : "default"}
+              >
+                <span>
+                  <PenOff className="size-3.5" />
+                </span>
+                <span className="hidden md:block">Course-Wise Input</span>
+              </Button>
+            </div>
+          </div>
+        </div>
         {semester.subjects.map(renderSubjectRow)}
       </CardContent>
     </Card>
