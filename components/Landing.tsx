@@ -1,9 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { rmstu } from "@/data/rmstu";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { GraduationCap, BookOpen, ArrowRight, Calculator } from "lucide-react";
+import { BookOpen, ArrowRight, Calculator } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ClearAllData } from "@/components/ClearAllData";
 import Image from "next/image";
