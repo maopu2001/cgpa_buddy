@@ -32,6 +32,7 @@ const Landing = () => {
               alt="RMSTU CGPA Buddy"
               width={200}
               height={200}
+              loading="eager"
             />
             <div className="mb-5 inline-flex items-center gap-2 rounded-full text-2xl font-semibold text-primary">
               RMSTU CGPA Buddy
