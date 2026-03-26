@@ -25,10 +25,20 @@ const Landing = () => {
       <header className="relative overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-secondary/5 to-transparent" />
         <div className="relative mx-auto max-w-5xl px-4 py-15 text-center sm:py-20">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
-            <GraduationCap className="h-4 w-4" />
-            RMSTU CGPA Buddy
+          {/* title */}
+          <div className="flex flex-col gap-2 justify-center items-center mb-5 mx-auto">
+            <Image
+              src="/logo.webp"
+              alt="RMSTU CGPA Buddy"
+              width={200}
+              height={200}
+            />
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full text-2xl font-semibold text-primary">
+              RMSTU CGPA Buddy
+            </div>
           </div>
+
+          {/* descriptions */}
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             Calculate Your{" "}
             <span className="bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">

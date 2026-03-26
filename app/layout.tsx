@@ -2,7 +2,7 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 
 export const metadata = {
-  title: "CGPA Calculator",
+  title: "CGPA Buddy",
   description: "Rangamati Science & Technology University CGPA calculator",
 };
 
