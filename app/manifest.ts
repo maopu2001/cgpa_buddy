@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "CGPA Buddy",
     short_name: "CGPA Buddy",
     description:
-      "CGPA Buddy helps RMSTU and custom-structure students calculate and track GPA/CGPA.",
+      "A web-based GPA/CGPA calculator designed for Rangamati Science and Technology University (RMSTU) students and other educational institutions with custom semester structures",
     start_url: "/",
     display: "standalone",
     theme_color: "#111827",

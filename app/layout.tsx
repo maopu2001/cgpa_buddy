@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     title: "CGPA Buddy",
     siteName: "CGPA Buddy",
     description:
-      "Calculate and track GPA/CGPA for RMSTU and custom semester structures with downloadable summaries.",
+      "A web-based GPA/CGPA calculator designed for Rangamati Science and Technology University (RMSTU) students and other educational institutions with custom semester structures",
     images: [
       {
         url: "/logo.webp",
@@ -93,7 +93,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "CGPA Buddy",
     description:
-      "Calculate and track GPA/CGPA for RMSTU and custom semester structures.",
+      "A web-based GPA/CGPA calculator designed for RMSTU students and other educational institutions with custom semester structures",
     images: ["/logo.webp"],
   },
   robots: {
