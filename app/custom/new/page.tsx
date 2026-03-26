@@ -195,37 +195,19 @@ export default function CustomSetupPage() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2">
             <ResetDialog
               onConfirm={handleReset}
               title="Reset All Data?"
               description="This will remove all semesters and courses. This action cannot be undone."
             >
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex gap-2 order-1 md:order-3"
-              >
+              <Button variant="outline" size="sm" className="flex gap-2 ">
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span className="hidden sm:block">Reset</span>
               </Button>
             </ResetDialog>
 
-            <ThemeToggle className="order-2 md:order-4" />
-
-            <DataExportImport
-              className="order-3 md:order-1"
-              action="export"
-              storageKey="custom-cgpa-data"
-              label="Data"
-            />
-
-            <DataExportImport
-              className="order-4 md:order-2"
-              action="import"
-              storageKey="custom-cgpa-data"
-              label="Data"
-            />
+            <ThemeToggle />
           </div>
         </div>
       </header>
@@ -234,6 +216,22 @@ export default function CustomSetupPage() {
       <main className="mx-auto max-w-5xl px-4 py-6">
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* This card contains the export/import buttons and the print summary button */}
+            <Card className="p-2 flex gap-2 md:col-span-2">
+              <DataExportImport
+                className="flex-1"
+                action="export"
+                storageKey="custom-cgpa-data"
+                label="Data"
+              />
+
+              <DataExportImport
+                className="flex-1"
+                action="import"
+                storageKey="custom-cgpa-data"
+                label="Data"
+              />
+            </Card>
             {/* Summary Card */}
             {semesters.length > 0 && (
               <Card>

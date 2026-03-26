@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ResetDialog } from "@/components/ResetDialog";
 import { DataExportImport } from "@/components/DataExportImport";
+import { Card } from "@/components/ui/card";
+import DownloadSummary from "@/components/DownloadSummary";
 
 export default function CustomCalculatorPage() {
   const router = useRouter();
@@ -104,8 +106,17 @@ export default function CustomCalculatorPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-2 ">
-              <div className="md:hidden"></div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGoToSetup}
+                className="flex gap-2 col-span-2 md:col-span-1 order-3 md:order-1"
+              >
+                <Settings className="h-3.5 w-3.5" />
+                <span className="hidden sm:block">Edit Structure</span>
+              </Button>
+
               <ResetDialog
                 onConfirm={handleReset}
                 title="Reset All Grades?"
@@ -114,38 +125,14 @@ export default function CustomCalculatorPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex gap-2 order-2 md:order-4"
+                  className="flex gap-2 order-1 md:order-2"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   <span className="hidden sm:block">Reset Grades</span>
                 </Button>
               </ResetDialog>
 
-              <ThemeToggle className="order-3 md:order-5" />
-
-              <DataExportImport
-                className="order-4 md:order-1"
-                action="export"
-                storageKey="custom-cgpa-data"
-                label="Data"
-              />
-
-              <DataExportImport
-                className="order-5 md:order-2"
-                action="import"
-                storageKey="custom-cgpa-data"
-                label="Data"
-              />
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleGoToSetup}
-                className="flex gap-2 order-6 md:order-3"
-              >
-                <Settings className="h-3.5 w-3.5" />
-                <span className="hidden sm:block">Edit Structure</span>
-              </Button>
+              <ThemeToggle className="order-2 md:order-3" />
             </div>
           </div>
           <div className="mx-auto max-w-5xl px-4 pb-2">
@@ -214,6 +201,32 @@ export default function CustomCalculatorPage() {
         {/* Content */}
         <main className="mx-auto max-w-5xl px-4 py-6 mb-24">
           <TabsContent value="results">
+            {/* This card contains the export/import buttons and the print summary button */}
+            <Card className="mb-4 p-2 flex gap-2">
+              <DataExportImport
+                className="flex-1"
+                action="export"
+                storageKey="custom-cgpa-data"
+                label="Data"
+              />
+
+              <DataExportImport
+                className="flex-1"
+                action="import"
+                storageKey="custom-cgpa-data"
+                label="Data"
+              />
+
+              <DownloadSummary
+                className="flex-1"
+                storageKey="custom-cgpa-data"
+                fileName={`ResultSummary-custom`}
+                label="Result Summary"
+                inputType="custom"
+              />
+            </Card>
+
+            {/* // This card contains the overall CGPA and total credits summary */}
             <ResultsDashboard
               semesters={semesters}
               grades={grades}

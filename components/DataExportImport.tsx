@@ -110,8 +110,11 @@ export function DataExportImport({
             variant="outline"
             className={cn("size-9 sm:w-fit gap-2", className)}
           >
-            <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Export {label}</span>
+            <Upload className="h-4 w-4" />
+            <span className="flex gap-1">
+              <span>Export</span>
+              <span className="hidden sm:inline">{label}</span>
+            </span>
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent className="w-9/10 rounded-sm">
@@ -128,8 +131,7 @@ export function DataExportImport({
               className="h-full m-0 bg-green-600"
               onClick={handleExport}
             >
-              <Download className="h-4 w-4 mr-1" />
-              Download
+              Export
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -143,8 +145,11 @@ export function DataExportImport({
             variant="outline"
             className={cn("size-9 sm:w-fit gap-2", className)}
           >
-            <Upload className="h-4 w-4" />
-            <span className="hidden sm:inline">Import {label}</span>
+            <Download className="h-4 w-4" />
+            <span className="flex gap-1">
+              <span>Import</span>
+              <span className="hidden sm:inline">{label}</span>
+            </span>
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent className="w-9/10 rounded-sm">

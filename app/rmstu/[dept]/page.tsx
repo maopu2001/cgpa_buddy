@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ResetDialog } from "@/components/ResetDialog";
 import { DataExportImport } from "@/components/DataExportImport";
+import { Card } from "@/components/ui/card";
+import DownloadSummary from "@/components/DownloadSummary";
 
 interface Props {
   params: Promise<{ dept: string }>;
@@ -118,33 +120,19 @@ export default function CalculatorPage({ params }: Props) {
                 </p>
               </div>
             </div>
-            <div className="grid gap-2 grid-cols-2 md:grid-cols-4">
+            <div className="grid gap-2 grid-cols-2">
               <ResetDialog
                 onConfirm={handleReset}
                 title="Reset All Grades?"
                 description="This will clear all grades, electives, and manual GPAs. This action cannot be undone."
               >
-                <Button variant="outline" size="sm" className="flex gap-2 order-1 md:order-3">
+                <Button variant="outline" size="sm" className="flex gap-2">
                   <RotateCcw className="h-3.5 w-3.5" />
                   <span className="hidden sm:block">Reset</span>
                 </Button>
               </ResetDialog>
 
-              <ThemeToggle className="order-2 md:order-4"/>
-
-              <DataExportImport
-                className="order-3 md:order-1"
-                action="export"
-                storageKey={`rmstu-${dept.toLowerCase()}-cgpa-data`}
-                label="Data"
-              />
-
-              <DataExportImport
-                className="order-4 md:order-2"
-                action="import"
-                storageKey={`rmstu-${dept.toLowerCase()}-cgpa-data`}
-                label="Data"
-              />
+              <ThemeToggle />
             </div>
           </div>
           <div className="mx-auto max-w-5xl px-4 pb-2">
@@ -212,6 +200,31 @@ export default function CalculatorPage({ params }: Props) {
         {/* Content */}
         <main className="mx-auto max-w-5xl px-4 py-6 mb-24">
           <TabsContent value="results">
+            {/* This card contains the export/import buttons and the print summary button */}
+            <Card className="mb-4 p-2 flex gap-2">
+              <DataExportImport
+                className="flex-1"
+                action="export"
+                storageKey={`rmstu-${dept.toLowerCase()}-cgpa-data`}
+                label="Data"
+              />
+
+              <DataExportImport
+                className="flex-1"
+                action="import"
+                storageKey={`rmstu-${dept.toLowerCase()}-cgpa-data`}
+                label="Data"
+              />
+
+              <DownloadSummary
+                className="flex-1"
+                storageKey={`rmstu-${dept.toLowerCase()}-cgpa-data`}
+                fileName={`ResultSummary-rmstu-${dept.toLowerCase()}`}
+                label="Result Summary"
+              />
+            </Card>
+
+            {/* This is the combined results dashboard that shows all semesters together */}
             <ResultsDashboard
               semesters={department.semesters}
               grades={grades}
