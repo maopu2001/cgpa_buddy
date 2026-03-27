@@ -8,6 +8,7 @@ import { ClearAllData } from "@/components/ClearAllData";
 import Image from "next/image";
 import Github from "./svg/github";
 import Link from "next/link";
+import InstallApp from "./InstallApp";
 
 const Landing = () => {
   const router = useRouter();
@@ -16,7 +17,8 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Theme Toggle */}
-      <div className="absolute right-4 top-4 z-50">
+      <div className="absolute right-4 top-4 z-50 flex items-center gap-2">
+        <InstallApp />
         <ThemeToggle />
       </div>
 

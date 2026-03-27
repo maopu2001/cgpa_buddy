@@ -123,7 +123,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="select-none">
       <body>
         <Providers>{children}</Providers>
       </body>
